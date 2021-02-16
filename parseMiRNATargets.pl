@@ -124,20 +124,20 @@ while(<IN>){
         #extract substring at previously found positions.
         my $str = substr($_, $curr_start, $curr_end - $curr_start);
         $hash{$curr_query}{$curr_target."_".$i}{match_aln} = $str;
-		#my @str = split(//, $str);
-		$str =~ s/^\s+//;
-		$str =~ s/\s+$//;
-		my $hsp = length($str);
-		$hash{$curr_query}{$curr_target."_".$i}{hsp} = $hsp;
+        #my @str = split(//, $str);
+        $str =~ s/^\s+//;
+        $str =~ s/\s+$//;
+        my $hsp = length($str);
+        $hash{$curr_query}{$curr_target."_".$i}{hsp} = $hsp;
         next;
     }
     #Smith-Waterman score: 279; 89.5% identity (100.0% similar) in 19 nt overlap (2-20:52164-52182)
     if($_ =~ m/^Smith-Waterman.*\((\d+)-(\d+):(\d+)-(\d+)\)$/){
-		my $diff_start = $1 - 1;
-		my $diff_end = $hash{$curr_query}{length} - $2;
+        my $diff_start = $1 - 1;
+        my $diff_end = $hash{$curr_query}{length} - $2;
         my $start = $3 - $diff_start;
         my $end = $4 + $diff_end;
-		my $hsp = $4 - $3;
+        my $hsp = $4 - $3;
         #print STDERR "1: ".$start."\n";
         #print STDERR "2: ".$end."\n";
         $hash{$curr_query}{$curr_target."_".$i}{start} = $start;
@@ -195,39 +195,39 @@ foreach my $query (keys %hash) {
         }
         my @query_char = split(//, $query_str);
         my @subject_char = split(//, $subject_str);
-		my @aln_char = split(//, $aln_str);
+        my @aln_char = split(//, $aln_str);
 
         my $length = scalar(@aln_char);
 
         #$hash_aln{reverse($aln_str)}++;
         
-		# Compute score according fo Fahlgren 2009 (and psRNATarget).
- 		# The following routine gives the exact same penalty scoring results
+        # Compute score according fo Fahlgren 2009 (and psRNATarget).
+        # The following routine gives the exact same penalty scoring results
         # to the ones given by psRNATarget (which they call E or Expect value.
-		print STDERR $query."\t".$subject."\n" if($verbose);
-		
-		my $z = 1;
-		my $score = 0;
+        print STDERR $query."\t".$subject."\n" if($verbose);
+        
+        my $z = 1;
+        my $score = 0;
         my $gap_status_q = "closed";
         my $gap_status_s = "closed";
         my $seed_mismatches = 0;
         my $total_mismatches = 0;
-		my $gaps = 0;
+        my $gaps = 0;
         my $GUs = 0;
-		
+        
         for my $el (@aln_char){
             my $el2 = shift(@query_char);
             my $el3 = shift(@subject_char);
 
-			my $is_GU = "no";
-			my $curr_score = 0;
+            my $is_GU = "no";
+            my $curr_score = 0;
             my $is_mismatch = "no";
-			
-			# Implement $el3
-			if($el eq " " && $el2 ne "-" && $el3 ne "-" && $z == $length){
-				$curr_score = 0;
+            
+            # Implement $el3
+            if($el eq " " && $el2 ne "-" && $el3 ne "-" && $z == $length){
+                $curr_score = 0;
             }elsif($el eq " " && $el2 ne "-" && $el3 ne "-"){
-				$curr_score = 1;
+                $curr_score = 1;
                 $is_mismatch = "yes";
                 $total_mismatches++;
             }elsif($el eq " "  && $el2 eq "-" && $gap_status_q eq "closed"){ #gap opening
@@ -236,13 +236,13 @@ foreach my $query (keys %hash) {
                 $is_mismatch = "yes";
                 $gaps++;
                 $total_mismatches++;
-			}elsif($el eq " "  && $el3 eq "-" && $gap_status_s eq "closed"){ #gap opening
+            }elsif($el eq " "  && $el3 eq "-" && $gap_status_s eq "closed"){ #gap opening
                 $curr_score = 2;
                 $gap_status_s = "open";
                 $is_mismatch = "yes";
                 $gaps++;
                 $total_mismatches++;
-			}elsif($el eq " "  && $el2 eq "-" && $gap_status_q eq "open"){ #gap extension
+            }elsif($el eq " "  && $el2 eq "-" && $gap_status_q eq "open"){ #gap extension
                 $curr_score = 1.5;
                 $is_mismatch = "yes";
                 $gaps++;
@@ -253,38 +253,38 @@ foreach my $query (keys %hash) {
                 $gaps++;
                 $total_mismatches++;
             }elsif($el eq "."){
-				$curr_score = 0.5;
+                $curr_score = 0.5;
                 $is_mismatch = "no";
                 $total_mismatches++;
-				$GUs++;
+                $GUs++;
                 $gap_status_q = "closed";
                 $gap_status_s = "closed";
-				$is_GU = "yes";
-			}elsif($el eq ":"){
+                $is_GU = "yes";
+            }elsif($el eq ":"){
                 $gap_status_q = "closed";
                 $gap_status_s = "closed";
             }
-			
+            
             # adjust if we are in seed region.
             if($z >= 2 && $z <= 13){
-				if($is_GU eq "yes"){
-					$curr_score = $curr_score * 1.0;
-				}elsif($is_GU eq "no"){
-					$curr_score = $curr_score * 1.5;
-				}
+                if($is_GU eq "yes"){
+                    $curr_score = $curr_score * 1.0;
+                }elsif($is_GU eq "no"){
+                    $curr_score = $curr_score * 1.5;
+                }
                 if($is_mismatch eq "yes"){
                     $seed_mismatches++;
                 }
-			}
-			$score = $score + $curr_score;
-		    print STDERR "$z:$curr_score    $score\n" if ($verbose);
-			$z++;
+            }
+            $score = $score + $curr_score;
+            print STDERR "$z:$curr_score    $score\n" if ($verbose);
+            $z++;
         }
-		$hash{$query}{$subject}{penalty_score} = $score;
-		$hash{$query}{$subject}{num_seed_mismatch} = $seed_mismatches;
-		$hash{$query}{$subject}{gaps} = $gaps;
-		$hash{$query}{$subject}{total_mismatches} = $total_mismatches;
-		$hash{$query}{$subject}{GUs} = $GUs;
+        $hash{$query}{$subject}{penalty_score} = $score;
+        $hash{$query}{$subject}{num_seed_mismatch} = $seed_mismatches;
+        $hash{$query}{$subject}{gaps} = $gaps;
+        $hash{$query}{$subject}{total_mismatches} = $total_mismatches;
+        $hash{$query}{$subject}{GUs} = $GUs;
     }
 }
 print STDERR Dumper(\%hash) if($verbose);
@@ -315,16 +315,16 @@ foreach my $query (keys %hash) {
             $hash{$query}{$subject}{hsp} >= $hsp_cutoff &&
             $hash{$query}{$subject}{gaps} <= $gap_cutoff &&
             $hash{$query}{$subject}{total_mismatches} <= $total_mismatches_cutoff){
-			
-			if($hash{$query}{$subject}{GUs} <= $GUs_cutoff){
-            	print STDOUT $query."\t".$subject_id."\t".$hash{$query}{$subject}{match_aln}."\t".$hash{$query}{$subject}{query_aln}."\t".$hash{$query}{$subject}{subject_aln}."\t".$hash{$query}{$subject}{q_start}."\t".$hash{$query}{$subject}{q_end}."\t".$hash{$query}{$subject}{start}."\t".$hash{$query}{$subject}{end}."\t".$hash{$query}{$subject}{penalty_score}."\t".$hash{$query}{$subject}{strand}."\n";
-        	}else{
-				$stats{GU_reject}++;
-			}
-		}else{
-			$stats{other_reject}++;
-           	print STDERR $query."\t".$subject_id."\t".$hash{$query}{$subject}{match_aln}."\t".$hash{$query}{$subject}{query_aln}."\t".$hash{$query}{$subject}{subject_aln}."\t".$hash{$query}{$subject}{q_start}."\t".$hash{$query}{$subject}{q_end}."\t".$hash{$query}{$subject}{start}."\t".$hash{$query}{$subject}{end}."\t".$hash{$query}{$subject}{penalty_score}."\t".$hash{$query}{$subject}{strand}."\n";
-		}
+            
+            if($hash{$query}{$subject}{GUs} <= $GUs_cutoff){
+                print STDOUT $query."\t".$subject_id."\t".$hash{$query}{$subject}{match_aln}."\t".$hash{$query}{$subject}{query_aln}."\t".$hash{$query}{$subject}{subject_aln}."\t".$hash{$query}{$subject}{q_start}."\t".$hash{$query}{$subject}{q_end}."\t".$hash{$query}{$subject}{start}."\t".$hash{$query}{$subject}{end}."\t".$hash{$query}{$subject}{penalty_score}."\t".$hash{$query}{$subject}{strand}."\n";
+            }else{
+                $stats{GU_reject}++;
+            }
+        }else{
+            $stats{other_reject}++;
+               print STDERR $query."\t".$subject_id."\t".$hash{$query}{$subject}{match_aln}."\t".$hash{$query}{$subject}{query_aln}."\t".$hash{$query}{$subject}{subject_aln}."\t".$hash{$query}{$subject}{q_start}."\t".$hash{$query}{$subject}{q_end}."\t".$hash{$query}{$subject}{start}."\t".$hash{$query}{$subject}{end}."\t".$hash{$query}{$subject}{penalty_score}."\t".$hash{$query}{$subject}{strand}."\n";
+        }
     }
 }
 print STDERR Dumper(\%stats) if($verbose);
