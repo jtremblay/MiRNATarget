@@ -33,5 +33,7 @@ Then, simply parse the alignments using the procedure implemented in psRNATarget
 If you use mirnatarget in your work, please cite:
 
 Tremblay, Julien
+
 mirnatarget 1.0 : miRNA target finder
+
 https://github.com/jtremblay/mirnatarget
