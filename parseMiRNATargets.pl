@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Getopt::Long;
-use Iterator::FastaDb;
 use Data::Dumper;
 
 my $usage=<<'ENDHERE';
@@ -34,7 +33,7 @@ INPUT:
 --rev                           : Set flag if alignments of miRNAs were done on revcomp subject sequences.
 
 OUTPUT:
-STDOUT <string>    : standard output
+STDOUT <string>                 : standard output
 
 NOTES:
 
@@ -340,80 +339,3 @@ sub complement_IUPAC {
 
 exit;
 
-
-### If ssearch output 9C:
-#while(<IN>){
-#    chomp;
-#    if($_ =~ m/^#/){
-#        next;
-#    }
-#    if($_ =~ m/^>>><<</){
-#        $counter_match_nucl_string = 0;
-#        $curr_start = 0;
-#        $curr_end = 0;
-#        next;
-#    }
-#    if($_ =~ m/^>>>(\S+), (\d+) nt/){
-#        $curr_query = $1;
-#        $curr_query_length = $2;
-#        $hash{$curr_query}{length} = $curr_query_length;
-#        next;
-#    }
-#    if($_ =~ m/^>>(\S+) .*\(\d+ nt\)$/){
-#        $curr_target = $1;
-#        #$curr_target =~ s/\s+$//;
-#        #print STDERR $curr_target."\n";
-#        $hash{$curr_query}{$curr_target}{name} = $curr_target;
-#        next;
-#    }
-#    #GL635794.1 Neisseria mucosa C102 genomic scaffold superc (494621) [f]
-#    if($_ =~ m/^\S+\s.*\(\d+\) \[/){
-#        #print STDERR $_."\n";
-#        next;
-#    }
-#    if($_ =~ m/^\S+\s+([ACGTU-]*)\s*$/ && $counter_match_nucl_string == 0){
-#        # Found a query nucl alignment string.
-#        $curr_start = $-[1];
-#        $curr_end = $+[1];
-#        #print STDERR "curr_start: ".$curr_start."\n";
-#        #print STDERR "curr_end: ".$curr_end."\n";
-#        my $str = substr($_, $curr_start, $curr_end - $curr_start);
-#        $hash{$curr_query}{$curr_target}{query_aln} = $str;
-#        
-#        $counter_match_nucl_string = 1;
-#        next;
-#    }
-#    if($_ =~ m/^\s+[\.\:]/ && $counter_match_nucl_string == 1){
-#        # Found a match string.
-#        #extract substring at previously found positions.
-#        my $str = substr($_, $curr_start, $curr_end - $curr_start);
-#        $hash{$curr_query}{$curr_target}{match_aln} = $str;
-#        next;
-#    }
-#    #Smith-Waterman score: 279; 89.5% identity (100.0% similar) in 19 nt overlap (2-20:52164-52182)
-#    if($_ =~ m/^Smith-Waterman.*\(\d+-\d+:(\d+)-(\d+)\)$/){
-#        my $start = $1;
-#        my $end = $2;
-#        #print STDERR "1: ".$start."\n";
-#        #print STDERR "2: ".$end."\n";
-#        $hash{$curr_query}{$curr_target}{start} = $start;
-#        $hash{$curr_query}{$curr_target}{end} = $end;
-#        next;
-#    }
-#    if($_ =~ m/^\S+\s+[ACGTUYNWRMKS-]*\s*$/ && $counter_match_nucl_string == 1){
-#        #extract substring at previously found positions.
-#        my $str = substr($_, $curr_start, $curr_end - $curr_start);
-#        # Found subject string of current match.
-#        $hash{$curr_query}{$curr_target}{subject_aln} = $str;
-#       
-#        if(!exists($hash{$curr_query}{$curr_target}{query_aln})){
-#            print STDERR "line # ".$.."\n";
-#            print STDERR Dumper(\%hash);
-#            die "Problem at $curr_query\n$curr_target\n";
-#        }
-#
-#        $counter_match_nucl_string = 0;
-#        next;
-#    }
-#}
-#close(IN);
