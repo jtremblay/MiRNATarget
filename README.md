@@ -9,7 +9,7 @@ The SSEARCH command used to align miRNA sequences is the following command inspi
 For forward strand alignment:
 ```
 ssearch36 \
- -f -16 -g -10.0 -E 10000 -T 8 -b 200 -r +4/-3 -n -U -W 10 \
+ -f -16 -g -10.0 -E 10000 -T 8 -b 200 -r +4/-3 -n -U -W 10 -N 1000 \
  <rev_comped_mirna_sequences> \
  <reference_db> \
  > <ssearch_output>
@@ -18,7 +18,7 @@ ssearch36 \
 For reverse strand alignment:
 ```
 ssearch36 \
--f -16 -g -10.0 -E 10000 -T 8 -b 200 -r +4/-3 -n -U -W 10 \
+-f -16 -g -10.0 -E 10000 -T 8 -b 200 -r +4/-3 -n -U -W 10 -N 1000 \
  <mirna_sequences> \
  <reference_db> \
  > <ssearch_output>
