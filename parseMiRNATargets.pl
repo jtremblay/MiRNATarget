@@ -167,7 +167,7 @@ while(<IN>){
         $str =~ s/\s+$//;
         next;
     }
-    if($_ =~ m/^\S+\s+[ACGTBUYNWRMKS-]*\s*$/ && $counter_match_nucl_string == 1){
+    if($_ =~ m/^\S+\s+[ACGTBHUYNWRMKS-]*\s*$/ && $counter_match_nucl_string == 1){
         #extract substring at previously found positions.
         my $str = substr($_, $curr_start, $curr_end - $curr_start);
         # Found subject string of current match.
