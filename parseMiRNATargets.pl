@@ -143,7 +143,7 @@ while(<IN>){
         }
         next;
     }
-    if($_ =~ m/^>--$/){
+    if($_ =~ m/^>--$/){ #same contig, but in another location
         $i++;
         $hash{$curr_query}{$curr_target."_".$i}{name} = $curr_target;
         next;
@@ -167,14 +167,14 @@ while(<IN>){
         $str =~ s/\s+$//;
         next;
     }
-    if($_ =~ m/^\S+\s+[ACGTUYNWRMKS-]*\s*$/ && $counter_match_nucl_string == 1){
+    if($_ =~ m/^\S+\s+[ACGTBUYNWRMKS-]*\s*$/ && $counter_match_nucl_string == 1){
         #extract substring at previously found positions.
         my $str = substr($_, $curr_start, $curr_end - $curr_start);
         # Found subject string of current match.
         $hash{$curr_query}{$curr_target."_".$i}{subject_aln} = $str;
        
         if(!exists($hash{$curr_query}{$curr_target."_".$i}{query_aln})){
-            die "Problem at $curr_query\n$curr_target"."_".$i."\n";
+            die "Problem at $curr_query\n$curr_target"."_".$i."\n".$_."\n"."line number ".$.." in the file\n";
         }
 
         $counter_match_nucl_string = 0;
@@ -247,9 +247,9 @@ foreach my $query (keys %hash) {
         print STDERR "    aln_str   :          ".$aln_str."\n" if($verbose);
         print STDERR "    query_str :          ".$query_str."\n" if($verbose);
         print STDERR "    aln_str   :          ".$subject_str."\n" if($verbose);
-        print STDERR "    length aln_str2:     ".length($aln_str2)."\n";
-        print STDERR "    length query_str2:   ".length($query_str2)."\n";
-        print STDERR "    length subject_str2: ".length($subject_str2)."\n";
+        print STDERR "    length aln_str2:     ".length($aln_str2)."\n" if($verbose);
+        print STDERR "    length query_str2:   ".length($query_str2)."\n" if($verbose);
+        print STDERR "    length subject_str2: ".length($subject_str2)."\n" if($verbose);
         print STDERR "    aln_str2   :         ".$aln_str2."\n" if($verbose);
         print STDERR "    query_str2 :         ".$query_str2."\n" if($verbose);
         print STDERR "    aln_str2   :         ".$subject_str2."\n" if($verbose);
