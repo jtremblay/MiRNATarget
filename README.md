@@ -30,12 +30,12 @@ Then, simply parse the alignments using the procedure implemented in psRNATarget
 ./parseMiRNATargets.pl --help
 ./parseMiRNATargets.pl --infile ssearch_output.txt > ssearch_parsed.tsv
 ```
-We compared the results of this script with the ones given by psRNATarget and it gives almost identical results. 
+We compared the results of this script with the ones given by psRNATarget and it gives identical results. 
 
-If you use mirnatarget in your work, please cite:
+If you use MiRNATarget in your work, please cite:
 
 Tremblay, Julien
 
-mirnatarget 1.0 : miRNA target finder
+MiRNATarget 1.0 : miRNA target finder
 
 https://github.com/jtremblay/mirnatarget
