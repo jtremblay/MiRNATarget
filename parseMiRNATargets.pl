@@ -27,15 +27,16 @@ INPUT:
                                    penalty_multiplier. Only mismatches are multiplied, not G:U pairs and/or the '.' alignment
                                    caracters given by SSEARCH.
 --num_mismatch_seed <int>        : default = 2 - Maximum of allowed mismatches in the seed region, excluding G:U pairs.
---hsp_cutoff <int>               : default = 17 - HSPs shorter than this value will be discarded.
+--hsp_cutoff <int>               : default = 14 - HSPs shorter than this value will be discarded.
 --gap_cutoff <int>               : default = 1 - alignments having more than <int> gaps willbe discarded.
 --total_mismatches_cutoff <int>  : default = 8 - alignments showing more than <int> mismatches will be discarded.
---GUs_cutoff <int>               : default = 6 - alignments having more than <int> mismatches will be discarded.
+--GUs_cutoff <int>               : default = 7 - alignments having more than <int> mismatches will be discarded.
 --keep_target_suffix             : set flag if you wish to keep the temporary _<int> suffix appended at the end
                                    of subjects IDs.
 --rev                            : Set flag if alignments of miRNAs were done on revcomp subject sequences.
 --verbose                        : Set flag for debugging.
---maximum_alignment_length <int> : default = 21 - alignments longer than this value will be discarded.
+--maximum_alignment_length <int> : default = 22 - alignments longer than this value will be discarded.
+--extra_penalty_query_gap <int>  : default = 1. If gap is located on query (miRNA) sequence, add an extra penalty of <int>.
 
 OUTPUT:
 STDOUT <string>    : standard output
@@ -53,7 +54,7 @@ Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
 ENDHERE
 
 ## OPTIONS
-my ($help, $infile, $E_cutoff, $num_mismatch_seed, $hsp_cutoff, $gap_cutoff, $total_mismatches_cutoff, $GUs_cutoff, $keep_target_suffix, $penalty_multiplier, $rev, $maximum_alignment_length);
+my ($help, $infile, $E_cutoff, $num_mismatch_seed, $hsp_cutoff, $gap_cutoff, $total_mismatches_cutoff, $GUs_cutoff, $keep_target_suffix, $penalty_multiplier, $rev, $maximum_alignment_length, $extra_penalty_query_gap);
 my $verbose = 0;
 
 GetOptions(
@@ -68,17 +69,19 @@ GetOptions(
   'maximum_alignment_length=s' => \$maximum_alignment_length,
   'total_mismatches_cutoff=i'  => \$total_mismatches_cutoff,
   'keep_target_suffix'         => \$keep_target_suffix,
+  'extra_penalty_query_gap=i'  => \$extra_penalty_query_gap,
   'verbose'                    => \$verbose,
   'help'                       => \$help
 );
 if ($help) { print $usage; exit; }
 $E_cutoff = 5.0 unless($E_cutoff);
 $num_mismatch_seed = 2 unless($num_mismatch_seed);
-$hsp_cutoff = 17 unless($hsp_cutoff);
+$hsp_cutoff = 14 unless($hsp_cutoff);
 $gap_cutoff = 1 unless($gap_cutoff);
 $total_mismatches_cutoff = 8 unless($total_mismatches_cutoff);
-$GUs_cutoff = 6 unless($GUs_cutoff);
-$maximum_alignment_length = 21 unless($maximum_alignment_length);
+$GUs_cutoff = 7 unless($GUs_cutoff);
+$maximum_alignment_length = 22 unless($maximum_alignment_length);
+$extra_penalty_query_gap = 1 unless($extra_penalty_query_gap);
 die("--infile missing...\n") unless($infile);
 $penalty_multiplier = 1.5 unless($penalty_multiplier);
 
@@ -185,10 +188,38 @@ close(IN);
 
 print STDERR "Done parsing ssearch standard format outfmt file. Will now parse each alignment...\n";
 
+print STDERR  Dumper(\%hash);
+my %seen;
 # Finally sort and print hash.
 foreach my $query (keys %hash) {
 
     foreach my $subject (keys %{ $hash{$query} }) {
+        next if($subject eq "length");
+        my $subject_str_test = $hash{$query}{$subject}{subject_aln};
+        $subject_str_test =~ s/\s+//g;
+        if(length($subject_str_test) < 20 || length($subject_str_test) > 23){
+            $hash{$query}{$subject} = {};
+            next;
+        }
+
+        # First avoid duplicates
+        my $contig_id = ""; 
+        if($subject =~ m/^(.*)_\d+$/){
+           $contig_id = $1;
+           print STDERR "contig_id: ".$contig_id."\n";
+        }else{
+            print STDERR $subject."\n";
+            die("Problem parsing subject field...\n");
+        }
+
+        print STDERR "hash_seen: ".$hash{$query}{$subject}{strand}."_".$query."_".$contig_id."_".$hash{$query}{$subject}{q_end}."-".$hash{$query}{$subject}{q_start}.":".$hash{$query}{$subject}{start}."-".$hash{$query}{$subject}{end}."\n";
+        if(!exists $seen{ $hash{$query}{$subject}{strand}."_".$query."_".$contig_id."_".$hash{$query}{$subject}{q_end}."-".$hash{$query}{$subject}{q_start}.":".$hash{$query}{$subject}{start}."-".$hash{$query}{$subject}{end} }){
+            $seen{        $hash{$query}{$subject}{strand}."_".$query."_".$contig_id."_".$hash{$query}{$subject}{q_end}."-".$hash{$query}{$subject}{q_start}.":".$hash{$query}{$subject}{start}."-".$hash{$query}{$subject}{end} }++;
+        }else{
+            $seen{        $hash{$query}{$subject}{strand}."_".$query."_".$contig_id."_".$hash{$query}{$subject}{q_end}."-".$hash{$query}{$subject}{q_start}.":".$hash{$query}{$subject}{start}."-".$hash{$query}{$subject}{end} }++;
+            $hash{$query}{$subject} = {};
+            next;
+        }
 
         next if($subject eq "length");
         my $aln_str; my $query_str; my $subject_str; my $seed_region_start; my $seed_region_end;
@@ -278,6 +309,7 @@ foreach my $query (keys %hash) {
         my $gaps = 0;
         my $GUs = 0;
         my $gap_penalty = 0;
+        my $total_extra_penalty_gap_query = 0;
         print STDERR "    ".$hash{$query}{$subject}{q_start}."\n" if($verbose);
         for my $el (@aln_char){
             #if($z >= $hash{$query}{$subject}{q_start}){ last; }
@@ -299,6 +331,7 @@ foreach my $query (keys %hash) {
                 $is_mismatch = "yes";
                 $gaps++;
                 $total_mismatches++;
+                $total_extra_penalty_gap_query = $total_extra_penalty_gap_query + $extra_penalty_query_gap;
             }elsif($el eq " "  && $el3 eq "-" && $gap_status_s eq "closed"){ #gap opening
                 $curr_score = 2;
                 $gap_status_s = "open";
@@ -310,6 +343,7 @@ foreach my $query (keys %hash) {
                 $is_mismatch = "yes";
                 $gaps++;
                 $total_mismatches++;
+                $total_extra_penalty_gap_query = $total_extra_penalty_gap_query + $extra_penalty_query_gap;
             }elsif($el eq " "  && $el3 eq "-" && $gap_status_s eq "open"){ #gap extension
                 $curr_score = 0.5;
                 $is_mismatch = "yes";
@@ -339,10 +373,11 @@ foreach my $query (keys %hash) {
                     $curr_score = $curr_score * 1.0;
                 }
             }
-            $score = $score + $curr_score;
+            $score = $score + $curr_score ;
             print STDERR "    $z:$curr_score    $score    $el2 $el $el3\n" if ($verbose);
             $z++;
         }
+        $score = $score + $total_extra_penalty_gap_query;
         $hash{$query}{$subject}{penalty_score} = $score;
         $hash{$query}{$subject}{num_seed_mismatch} = $seed_mismatches;
         $hash{$query}{$subject}{gaps} = $gaps;
@@ -357,27 +392,29 @@ my %stats;
 foreach my $query (keys %hash) {
 
     foreach my $subject (keys %{ $hash{$query} }) {
+        next if($subject eq "length");
         my $subject_id = $subject;
         unless($keep_target_suffix){
             $subject_id =~ s/_\d+$//;
         }
 
-        next if($subject eq "length");
-        if($hash{$query}{$subject}{penalty_score} <= $E_cutoff && 
-            $hash{$query}{$subject}{num_seed_mismatch} <= $num_mismatch_seed && 
-            $hash{$query}{$subject}{hsp} >= $hsp_cutoff &&
-            $hash{$query}{$subject}{gaps} <= $gap_cutoff &&
-            $hash{$query}{$subject}{total_mismatches} <= $total_mismatches_cutoff &&
-            length($hash{$query}{$subject}{subject_aln}) <= $maximum_alignment_length){
-            
-            if($hash{$query}{$subject}{GUs} <= $GUs_cutoff){
-                print STDOUT $query."\t".$subject_id."\t".$hash{$query}{$subject}{match_aln}."\t".$hash{$query}{$subject}{query_aln}."\t".$hash{$query}{$subject}{subject_aln}."\t".$hash{$query}{$subject}{q_start}."\t".$hash{$query}{$subject}{q_end}."\t".$hash{$query}{$subject}{start}."\t".$hash{$query}{$subject}{end}."\t".$hash{$query}{$subject}{penalty_score}."\t".$hash{$query}{$subject}{strand}."\n";
+        if(defined $hash{$query}{$subject}{penalty_score}){
+            if($hash{$query}{$subject}{penalty_score} <= $E_cutoff && 
+                $hash{$query}{$subject}{num_seed_mismatch} <= $num_mismatch_seed && 
+                $hash{$query}{$subject}{hsp} >= $hsp_cutoff &&
+                $hash{$query}{$subject}{gaps} <= $gap_cutoff &&
+                $hash{$query}{$subject}{total_mismatches} <= $total_mismatches_cutoff &&
+                length($hash{$query}{$subject}{subject_aln}) <= $maximum_alignment_length){
+                
+                if($hash{$query}{$subject}{GUs} <= $GUs_cutoff){
+                    print STDOUT $query."\t".$subject_id."\t".$hash{$query}{$subject}{match_aln}."\t".$hash{$query}{$subject}{query_aln}."\t".$hash{$query}{$subject}{subject_aln}."\t".$hash{$query}{$subject}{q_start}."\t".$hash{$query}{$subject}{q_end}."\t".$hash{$query}{$subject}{start}."\t".$hash{$query}{$subject}{end}."\t".$hash{$query}{$subject}{penalty_score}."\t".$hash{$query}{$subject}{strand}."\n";
+                }else{
+                    $stats{GU_reject}++;
+                }
             }else{
-                $stats{GU_reject}++;
+                $stats{other_reject}++;
+                   print STDERR $query."\t".$subject_id."\t".$hash{$query}{$subject}{match_aln}."\t".$hash{$query}{$subject}{query_aln}."\t".$hash{$query}{$subject}{subject_aln}."\t".$hash{$query}{$subject}{q_start}."\t".$hash{$query}{$subject}{q_end}."\t".$hash{$query}{$subject}{start}."\t".$hash{$query}{$subject}{end}."\t".$hash{$query}{$subject}{penalty_score}."\t".$hash{$query}{$subject}{strand}."\n";
             }
-        }else{
-            $stats{other_reject}++;
-               print STDERR $query."\t".$subject_id."\t".$hash{$query}{$subject}{match_aln}."\t".$hash{$query}{$subject}{query_aln}."\t".$hash{$query}{$subject}{subject_aln}."\t".$hash{$query}{$subject}{q_start}."\t".$hash{$query}{$subject}{q_end}."\t".$hash{$query}{$subject}{start}."\t".$hash{$query}{$subject}{end}."\t".$hash{$query}{$subject}{penalty_score}."\t".$hash{$query}{$subject}{strand}."\n";
         }
     }
 }
@@ -393,6 +430,7 @@ sub complement_IUPAC {
    return $comp;
 }
 
+print STDERR  Dumper(\%seen);
 exit;
 
 
