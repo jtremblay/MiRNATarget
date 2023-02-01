@@ -24,7 +24,7 @@ ssearch36 \
  > <ssearch_output>
 ```
 Note that in our tests, the ```-r``` argument had to be absolutely set to ```-r +4/-3```. The ```-f``` and ```-g``` parameters that were found to work are the following:
-```-f -8 -g -3``` or ```-f -9 -g 2```.
+```-f -8 -g -3``` or ```-f -9 -g -2```.
 Then, simply parse the alignments using the procedure implemented in psRNATarget, itself inspired from Fahlgren & Carrington (2000):
 ```
 ./parseMiRNATargets.pl --help
