@@ -39,7 +39,8 @@ INPUT:
 --extra_penalty_query_gap <int>  : default = 1. If gap is located on query (miRNA) sequence, add an extra penalty of <int>.
 
 OUTPUT:
-STDOUT <string>    : standard output
+STDOUT <string>                  : standard output. Alignments that passed filters.
+--outfile_failed <string>        : stanbard error. Alignments that failed to pass filters.
 
 NOTES:
 It is not entirely clear which ssearch36 parameters are used by psRNATarget, but using the following parameters gives identical results to psRNATarget.
@@ -54,7 +55,7 @@ Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
 ENDHERE
 
 ## OPTIONS
-my ($help, $infile, $E_cutoff, $num_mismatch_seed, $hsp_cutoff, $gap_cutoff, $total_mismatches_cutoff, $GUs_cutoff, $keep_target_suffix, $penalty_multiplier, $rev, $maximum_alignment_length, $extra_penalty_query_gap);
+my ($help, $infile, $E_cutoff, $num_mismatch_seed, $hsp_cutoff, $gap_cutoff, $total_mismatches_cutoff, $GUs_cutoff, $keep_target_suffix, $penalty_multiplier, $rev, $maximum_alignment_length, $extra_penalty_query_gap, $outfile_failed);
 my $verbose = 0;
 
 GetOptions(
@@ -70,6 +71,7 @@ GetOptions(
   'total_mismatches_cutoff=i'  => \$total_mismatches_cutoff,
   'keep_target_suffix'         => \$keep_target_suffix,
   'extra_penalty_query_gap=i'  => \$extra_penalty_query_gap,
+  'outfile_failed=s'           => \$outfile_failed,
   'verbose'                    => \$verbose,
   'help'                       => \$help
 );
@@ -84,6 +86,11 @@ $maximum_alignment_length = 22 unless($maximum_alignment_length);
 $extra_penalty_query_gap = 1 unless($extra_penalty_query_gap);
 die("--infile missing...\n") unless($infile);
 $penalty_multiplier = 1.5 unless($penalty_multiplier);
+
+my $OUT_FAILED;
+if($outfile_failed){
+    open($OUT_FAILED, ">".$outfile_failed) or die "Can't open $outfile_failed\n";
+}
 
 ## MAIN
 my %hash;
@@ -188,7 +195,7 @@ close(IN);
 
 print STDERR "Done parsing ssearch standard format outfmt file. Will now parse each alignment...\n";
 
-print STDERR  Dumper(\%hash);
+#print STDERR  Dumper(\%hash);
 my %seen;
 # Finally sort and print hash.
 foreach my $query (keys %hash) {
@@ -206,13 +213,11 @@ foreach my $query (keys %hash) {
         my $contig_id = ""; 
         if($subject =~ m/^(.*)_\d+$/){
            $contig_id = $1;
-           print STDERR "contig_id: ".$contig_id."\n";
         }else{
             print STDERR $subject."\n";
             die("Problem parsing subject field...\n");
         }
 
-        print STDERR "hash_seen: ".$hash{$query}{$subject}{strand}."_".$query."_".$contig_id."_".$hash{$query}{$subject}{q_end}."-".$hash{$query}{$subject}{q_start}.":".$hash{$query}{$subject}{start}."-".$hash{$query}{$subject}{end}."\n";
         if(!exists $seen{ $hash{$query}{$subject}{strand}."_".$query."_".$contig_id."_".$hash{$query}{$subject}{q_end}."-".$hash{$query}{$subject}{q_start}.":".$hash{$query}{$subject}{start}."-".$hash{$query}{$subject}{end} }){
             $seen{        $hash{$query}{$subject}{strand}."_".$query."_".$contig_id."_".$hash{$query}{$subject}{q_end}."-".$hash{$query}{$subject}{q_start}.":".$hash{$query}{$subject}{start}."-".$hash{$query}{$subject}{end} }++;
         }else{
@@ -252,10 +257,6 @@ foreach my $query (keys %hash) {
             $query_str2     = substr($query_str,   $offset, $end);
             $subject_str2   = substr($subject_str, $offset, $end);
         
-            #$aln_str2 = substr($aln_str, $hash{$query}{$subject}{q_start}, $hash{$query}{$subject}{q_end});
-            #$query_str2 = substr($aln_str, $hash{$query}{$subject}{q_start}, $hash{$query}{$subject}{q_end});
-            #$subject_str2 = substr($aln_str, $hash{$query}{$subject}{q_start}, $hash{$query}{$subject}{q_end});
-        
         # If alignments (3'-miRNA-5') vs 5'-DNA-3' are being processed, we have to reverse strings to make sure that we are starting from the 5' end.
         }else{
             print STDERR "     orig aln string:    ".$hash{$query}{$subject}{match_aln}."\n" if($verbose);
@@ -268,9 +269,9 @@ foreach my $query (keys %hash) {
             $aln_str2      = reverse($aln_str);
             $query_str2    = reverse($query_str);
             $subject_str2  = reverse($subject_str);
-            $aln_str2       = substr($aln_str2,     $offset, $end);
-            $query_str2     = substr($query_str2,   $offset, $end);
-            $subject_str2   = substr($subject_str2, $offset, $end);
+            $aln_str2      = substr($aln_str2,     $offset, $end);
+            $query_str2    = substr($query_str2,   $offset, $end);
+            $subject_str2  = substr($subject_str2, $offset, $end);
         }
         print STDERR "    length aln_str:      ".length($aln_str)."\n" if($verbose);
         print STDERR "    length query_str:    ".length($query_str)."\n" if($verbose);
@@ -293,7 +294,7 @@ foreach my $query (keys %hash) {
 
         my $length = scalar(@aln_char);
 
-        # Compute score according fo Fahlgren 2009 (and psRNATarget).
+        # Compute score according (more or less) fo Fahlgren 2009 (and psRNATarget).
         # Careful here because in psRNATarget, what they refer to as G:U pairs actually corresponds
         # to . characters in the alignment strings given by SSEARCH36. Furthermore, G:U pairs (or . pairs) 
         # are NOT multiplied by the penalty error multiplier (default 1.5) in the seed region (2-13 nt), only mismatches are multipled.
@@ -413,11 +414,14 @@ foreach my $query (keys %hash) {
                 }
             }else{
                 $stats{other_reject}++;
-                   print STDERR $query."\t".$subject_id."\t".$hash{$query}{$subject}{match_aln}."\t".$hash{$query}{$subject}{query_aln}."\t".$hash{$query}{$subject}{subject_aln}."\t".$hash{$query}{$subject}{q_start}."\t".$hash{$query}{$subject}{q_end}."\t".$hash{$query}{$subject}{start}."\t".$hash{$query}{$subject}{end}."\t".$hash{$query}{$subject}{penalty_score}."\t".$hash{$query}{$subject}{strand}."\n";
+                if($outfile_failed){
+                    print $OUT_FAILED $query."\t".$subject_id."\t".$hash{$query}{$subject}{match_aln}."\t".$hash{$query}{$subject}{query_aln}."\t".$hash{$query}{$subject}{subject_aln}."\t".$hash{$query}{$subject}{q_start}."\t".$hash{$query}{$subject}{q_end}."\t".$hash{$query}{$subject}{start}."\t".$hash{$query}{$subject}{end}."\t".$hash{$query}{$subject}{penalty_score}."\t".$hash{$query}{$subject}{strand}."\n";
+                }
             }
         }
     }
 }
+close($OUT_FAILED);
 print STDERR Dumper(\%stats) if($verbose);
 if($verbose){ print STDERR  Dumper(\%hash); }
 
@@ -430,7 +434,7 @@ sub complement_IUPAC {
    return $comp;
 }
 
-print STDERR  Dumper(\%seen);
+print STDERR  Dumper(\%seen) if($verbose);
 exit;
 
 
