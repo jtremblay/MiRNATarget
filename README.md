@@ -9,7 +9,7 @@ The SSEARCH command used to align miRNA sequences is the following command inspi
 For forward strand alignment:
 ```
 ssearch36 \
- -f -8 -g -2 -E 10000 -T 8 -b 200 -r +4/-3 -n -U -W 10 -N 20000 \
+ -f -8 -g -3 -E 10000 -T 8 -b 200 -r +4/-3 -n -U -W 10 -N 20000 \
  <rev_comped_mirna_sequences> \
  <reference_db> \
  > <ssearch_output>
@@ -18,13 +18,13 @@ ssearch36 \
 For reverse strand alignment:
 ```
 ssearch36 \
--f -8 -g -2 -E 10000 -T 8 -b 200 -r +4/-3 -n -U -W 10 -N 20000 \
+-f -8 -g -3 -E 10000 -T 8 -b 200 -r +4/-3 -n -U -W 10 -N 20000 \
  <mirna_sequences> \
  <reference_db> \
  > <ssearch_output>
 ```
 Note that in our tests, the ```-r``` argument had to be absolutely set to ```-r +4/-3```. The ```-f``` and ```-g``` parameters that were found to work are the following:
-```-f -8 -g -3```, ```-f -8 -g -2``` or ```-f -9 -g 2```.
+```-f -8 -g -3``` or ```-f -9 -g 2```.
 Then, simply parse the alignments using the procedure implemented in psRNATarget, itself inspired from Fahlgren & Carrington (2000):
 ```
 ./parseMiRNATargets.pl --help
