@@ -230,6 +230,9 @@ print STDOUT "#query_id\tsubject_id\tmatch_aln\tquery_aln\tsubject_aln\tq_start\
 
 while(<IN_TMP>){
     chomp;
+    if ($_ =~ /^\s*$/) {
+       next;#blank line
+    }
     my @row = split(/\t/, $_);
     my $query  = $row[0];
     my $subject = $row[1];
@@ -437,6 +440,7 @@ while(<IN_TMP>){
 }
 
 close($OUT_FAILED) if($outfile_failed);
+close(IN_TMP);
 print STDERR Dumper(\%stats) if($verbose);
 if($verbose){ print STDERR  Dumper(\%hash); }
 print STDERR  Dumper(\%seen) if($verbose);
