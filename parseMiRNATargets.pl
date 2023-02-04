@@ -17,16 +17,20 @@ scoring scheme found in PMC3499661. Results of this script matches exactly the o
 by psRNATarget.
 
 INPUT:
---infile <string>                : ssearch default out format file. If no --infile <string> arg is specified, will read from standard input.
+--infile <string>                : Alignments .tsv file format (output of companion script parseSsearch.pl). If no --infile <string> arg is 
+                                   specified, will read from standard input.
 --E_cutoff <float>               : default = 5.0  - Expectation value is the penalty for the mismatches 
                                    between mature small RNA and the target sequence. A higher value indicates 
                                    less similarity (and possibility) between small RNA and the target candidate. 
                                    The default penalty rule is set up by the scoring schema. Maximum expectation is the cutoff; 
                                    any small RNA-target pair with an expectation less than the cutoff will be discarded in the final result. 
                                    The recommended values are 3.0-5.0 depending on the scoring schema. 
---penalty_multiplier <string>    : default = 1.5. In the seed region (2-13 nt from the 5' of the miRNA strand), multiply mismatches by 
+--penalty_multiplier <string>    : default = 1.5. In the seed region (by default, 2-13 nt from the 5' of the miRNA strand), multiply mismatches by 
                                    penalty_multiplier. Only mismatches are multiplied, not G:U pairs and/or the '.' alignment
                                    caracters given by SSEARCH.
+--hsp_start <int>                : default = 2 - Beginning of HSP region. --hsp_start and --hsp_end positions affect where in the alignment 
+                                   the --penalty_multiplier will be applied.
+--hsp_end <int>                  : default = 13 - End of HSP region.
 --num_mismatch_seed <int>        : default = 2 - Maximum of allowed mismatches in the seed region, excluding G:U pairs.
 --hsp_cutoff <int>               : default = 14 - HSPs shorter than this value will be discarded.
 --gap_cutoff <int>               : default = 1 - alignments having more than <int> gaps willbe discarded.
@@ -57,7 +61,8 @@ Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
 ENDHERE
 
 ## OPTIONS
-my ($help, $infile, $E_cutoff, $num_mismatch_seed, $hsp_cutoff, $gap_cutoff, $total_mismatches_cutoff, $GUs_cutoff, $keep_target_suffix, $penalty_multiplier, $rev, $maximum_alignment_length, $extra_penalty_query_gap, $outfile_failed, $keep_tmp_file);
+my ($help, $infile, $E_cutoff, $num_mismatch_seed, $hsp_cutoff, $gap_cutoff, $total_mismatches_cutoff, $GUs_cutoff, $keep_target_suffix, $penalty_multiplier, 
+    $rev, $maximum_alignment_length, $extra_penalty_query_gap, $outfile_failed, $keep_tmp_file, $hsp_start, $hsp_end);
 my $verbose = 0;
 
 GetOptions(
@@ -69,6 +74,8 @@ GetOptions(
   'GUs_cutoff=i'               => \$GUs_cutoff,
   'penalty_multiplier=f'       => \$penalty_multiplier,
   'rev'                        => \$rev,
+  'hsp_start=i'                => \$hsp_start,
+  'hsp_end=i'                  => \$hsp_end,
   'keep_tmp_file'              => \$keep_tmp_file,
   'maximum_alignment_length=s' => \$maximum_alignment_length,
   'total_mismatches_cutoff=i'  => \$total_mismatches_cutoff,
@@ -93,6 +100,14 @@ $GUs_cutoff = 7 unless($GUs_cutoff);
 $maximum_alignment_length = 22 unless($maximum_alignment_length);
 $extra_penalty_query_gap = 1 unless($extra_penalty_query_gap);
 $penalty_multiplier = 1.5 unless($penalty_multiplier);
+$hsp_start = 2 unless($hsp_start);
+$hsp_end = 13 unless($hsp_end);
+if($hsp_start >= $hsp_end){
+    die("--hsp_start <int> has to be greater than --hsp_end <int>\n");
+}
+if($hsp_start < 1){
+    die("--hsp_start has to be 1 or greater, but smaller than --hsp_end <int>\n");
+}
 
 my $OUT_FAILED;
 if($outfile_failed){
@@ -118,8 +133,8 @@ while(<$IN>){
        next;#blank line
     }
     my @row = split(/\t/, $_);
-    my $query  = $row[0];
-    my $subject = $row[1];
+    my $query       = $row[0];
+    my $subject     = $row[1];
     my $aln_str     = $row[2];
     my $query_str   = $row[3];
     my $subject_str = $row[4];
@@ -284,7 +299,7 @@ while(<$IN>){
             die;
         }
         
-        if($z >= 2 && $z <= 13){
+        if($z >= $hsp_start && $z <= $hsp_end){
             if($is_mismatch eq "yes"){
                 print STDERR ("    is mismatch in the seed region - will apply penalty... curr_score: ".$curr_score." * 1.5 => ".($curr_score*$penalty_multiplier)."\n") if($verbose);
                 $curr_score = $curr_score * $penalty_multiplier;
