@@ -39,6 +39,11 @@ parseMiRNATargets.pl \
   --infile ssearch_output.tsv \
   > ssearch_output_parsed.tsv
 ```
+You can also pipe the output of parseSsearch.pl into parseMiRNATargets.pl like this:
+```
+parseSsearch.pl --infile ssearch_output.txt | parseMiRNATargets.pl > ssearch_output_parsed.tsv
+```
+
 We compared the results of this script with the ones given by psRNATarget and it gives identical results. 
 
 If you use MiRNATarget in your work, please cite:

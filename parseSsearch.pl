@@ -9,12 +9,11 @@ use File::Basename;
 
 my $usage=<<'ENDHERE';
 NAME:
-parseMiRNATargetsLowMem.pl
+parseSsearch.pl
 
 PURPOSE:
-From the default output of ssearch36, distribute miRNA into their site types. According to the 
-scheme found in PMC3499661. Results of this script matches almost exactly the ones outputted 
-by psRNATarget. The scoring sheme gives exactly the same results as psRNATarget.
+From the default output of ssearch36, this script parses each alignment to a .tsv format that can then be used in the companion 
+script parseMiRNATargets.pl.
 
 INPUT:
 --infile <string>                : ssearch default out format file

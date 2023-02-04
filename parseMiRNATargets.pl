@@ -9,15 +9,15 @@ use File::Basename;
 
 my $usage=<<'ENDHERE';
 NAME:
-parseMiRNATargetsLowMem.pl
+parseMiRNATargets.pl
 
 PURPOSE:
-From the default output of ssearch36, distribute miRNA into their site types. According to the 
-scheme found in PMC3499661. Results of this script matches almost exactly the ones outputted 
-by psRNATarget. The scoring sheme gives exactly the same results as psRNATarget.
+From the output of companion script parseSsearch.pl, this script assigns a penalty score (Expect value) to each miRNA alignment according to the 
+scoring scheme found in PMC3499661. Results of this script matches exactly the ones given 
+by psRNATarget.
 
 INPUT:
---infile <string>                : ssearch default out format file
+--infile <string>                : ssearch default out format file. If no --infile <string> arg is specified, will read from standard input.
 --E_cutoff <float>               : default = 5.0  - Expectation value is the penalty for the mismatches 
                                    between mature small RNA and the target sequence. A higher value indicates 
                                    less similarity (and possibility) between small RNA and the target candidate. 
@@ -92,7 +92,6 @@ $total_mismatches_cutoff = 8 unless($total_mismatches_cutoff);
 $GUs_cutoff = 7 unless($GUs_cutoff);
 $maximum_alignment_length = 22 unless($maximum_alignment_length);
 $extra_penalty_query_gap = 1 unless($extra_penalty_query_gap);
-die("--infile missing...\n") unless($infile);
 $penalty_multiplier = 1.5 unless($penalty_multiplier);
 
 my $OUT_FAILED;
@@ -107,8 +106,13 @@ my %stats;
 # Print header.
 print STDOUT "#query_id\tsubject_id\tmatch_aln\tquery_aln\tsubject_aln\tq_start\tq_end\ts_start\ts_end\texpect_value\tstrand\n";
 
-open(IN, "<", $infile) or die "Can't open $infile\n";
-while(<IN>){
+my $IN = new IO::File;
+if($infile){
+    open($IN, "<", $infile) or die "Can't open $infile\n";
+}else{
+    $IN = *STDIN;
+}    
+while(<$IN>){
     chomp;
     if ($_ =~ /^\s*$/) {
        next;#blank line
@@ -321,7 +325,7 @@ while(<IN>){
 }
 
 close($OUT_FAILED) if($outfile_failed);
-close(IN);
+close($IN);
 print STDERR Dumper(\%stats) if($verbose);
 print STDERR  Dumper(\%seen) if($verbose);
 
