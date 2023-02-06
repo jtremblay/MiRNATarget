@@ -81,8 +81,15 @@ STDOUT <string>                  : standard output. Alignments that passed filte
 --outfile_failed <string>        : stanbard error. Alignments that failed to pass filters.
 
 ```
+## Note on G:U pairs
+It might seem confusing that in Fig. 1, what is actually shown as A-G or C-U pairs are considered to be G:U mismatches. This is because the reverse complementary sequence is the one used for computing the alignment, but the reverse sequence is the one that actually binds to its DNA target. For instance, in Fig. 1 at position 4, the 'A' nucleotide on the rev-comp sequence is a 'U' on the reverse sequence, hence resulting in a G:U pair. 
+```
+Input mirna sequence:           UACUAAGUAGAGUCUAAGAGA
+Reverse sequence:               AGAGAAUCUGAGAUGAAUCAU <- Actual sequence that will bind to its target
+Reverse complementary sequence: UCUCUUAGACUCUACUUAGUA <- miRNA sequence shown on Fig. 1
+```
 
-
+## Citation
 If you use MiRNATarget in your work, please cite:
 
 Tremblay, Julien

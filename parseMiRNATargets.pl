@@ -32,7 +32,7 @@ INPUT:
                                    the --penalty_multiplier will be applied.
 --hsp_end <int>                  : default = 13 - End of HSP region.
 --num_mismatch_seed <int>        : default = 2 - Maximum of allowed mismatches in the seed region, excluding G:U pairs.
---hsp_cutoff <int>               : default = 14 - HSPs shorter than this value will be discarded.
+--hsp_cutoff <int>               : default = 14 - HSPs (i.e. the one computed by SSEARCH) shorter than this value will be discarded.
 --gap_cutoff <int>               : default = 1 - alignments having more than <int> gaps willbe discarded.
 --total_mismatches_cutoff <int>  : default = 8 - alignments showing more than <int> mismatches will be discarded.
 --GUs_cutoff <int>               : default = 7 - alignments having more than <int> mismatches will be discarded.
@@ -42,7 +42,7 @@ INPUT:
 --verbose                        : Set flag for debugging.
 --maximum_alignment_length <int> : default = 22 - alignments longer than this value will be discarded.
 --extra_penalty_query_gap <int>  : default = 1. If gap is located on query (miRNA) sequence, add an extra penalty of <int>.
---keep_tmp_file                  : Set flag if you wish to keep the tmp file resulting from the parsing of the ssearch file used as input.
+--alignment_length <int>         : default = 19 - penalty score for each alignment will computed from 1 to <alignment_length>.
 
 OUTPUT:
 STDOUT <string>                  : standard output. Alignments that passed filters.
@@ -62,7 +62,7 @@ ENDHERE
 
 ## OPTIONS
 my ($help, $infile, $E_cutoff, $num_mismatch_seed, $hsp_cutoff, $gap_cutoff, $total_mismatches_cutoff, $GUs_cutoff, $keep_target_suffix, $penalty_multiplier, 
-    $rev, $maximum_alignment_length, $extra_penalty_query_gap, $outfile_failed, $keep_tmp_file, $hsp_start, $hsp_end);
+    $rev, $maximum_alignment_length, $extra_penalty_query_gap, $outfile_failed, $keep_tmp_file, $hsp_start, $hsp_end, $alignment_length);
 my $verbose = 0;
 
 GetOptions(
@@ -82,6 +82,7 @@ GetOptions(
   'keep_target_suffix'         => \$keep_target_suffix,
   'extra_penalty_query_gap=i'  => \$extra_penalty_query_gap,
   'outfile_failed=s'           => \$outfile_failed,
+  'alignment_length=i'         => \$alignment_length,
   'verbose'                    => \$verbose,
   'help'                       => \$help
 );
@@ -107,6 +108,10 @@ if($hsp_start >= $hsp_end){
 }
 if($hsp_start < 1){
     die("--hsp_start has to be 1 or greater, but smaller than --hsp_end <int>\n");
+}
+$alignment_length = 19 unless($alignment_length);
+if($alignment_length < $hsp_end){
+    die("--alignment_length <int> has to be >= than --hsp_end <int>\n");
 }
 
 my $OUT_FAILED;
@@ -177,7 +182,7 @@ while(<$IN>){
     my $hsp_config = 1; my $offset; my $end_substr;
     if($hsp_config == 1){
         $offset = 0;
-        $end_substr = 19;
+        $end_substr = $alignment_length;
     }elsif($hsp_config == 2){
         $offset = 1;
         $end_substr = 20;
