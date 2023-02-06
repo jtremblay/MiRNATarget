@@ -13,8 +13,7 @@ parseMiRNATargets.pl
 
 PURPOSE:
 From the output of companion script parseSsearch.pl, this script assigns a penalty score (Expect value) to each miRNA alignment according to the 
-scoring scheme found in PMC3499661. Results of this script matches exactly the ones given 
-by psRNATarget.
+scoring scheme found in PMC3499661. Results of this script matches exactly the ones given by psRNATarget.
 
 INPUT:
 --infile <string>                : Alignments .tsv file format (output of companion script parseSsearch.pl). If no --infile <string> arg is 
