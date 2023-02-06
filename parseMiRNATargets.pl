@@ -28,9 +28,9 @@ INPUT:
 --penalty_multiplier <string>    : default = 1.5. In the seed region (by default, 2-13 nt from the 5' of the miRNA strand), multiply mismatches by 
                                    penalty_multiplier. Only mismatches are multiplied, not G:U pairs and/or the '.' alignment
                                    caracters given by SSEARCH.
---hsp_start <int>                : default = 2 - Beginning of HSP region. --hsp_start and --hsp_end positions affect where in the alignment 
+--seed_start <int>               : default = 2 - Beginning of seed region. --seed_start and --seed_end positions affect where in the alignment 
                                    the --penalty_multiplier will be applied.
---hsp_end <int>                  : default = 13 - End of HSP region.
+--seed_end <int>                 : default = 13 - End of seed region.
 --num_mismatch_seed <int>        : default = 2 - Maximum of allowed mismatches in the seed region, excluding G:U pairs.
 --hsp_cutoff <int>               : default = 14 - HSPs (i.e. the one computed by SSEARCH) shorter than this value will be discarded.
 --gap_cutoff <int>               : default = 1 - alignments having more than <int> gaps willbe discarded.
@@ -62,7 +62,7 @@ ENDHERE
 
 ## OPTIONS
 my ($help, $infile, $E_cutoff, $num_mismatch_seed, $hsp_cutoff, $gap_cutoff, $total_mismatches_cutoff, $GUs_cutoff, $keep_target_suffix, $penalty_multiplier, 
-    $rev, $maximum_alignment_length, $extra_penalty_query_gap, $outfile_failed, $keep_tmp_file, $hsp_start, $hsp_end, $alignment_length);
+    $rev, $maximum_alignment_length, $extra_penalty_query_gap, $outfile_failed, $keep_tmp_file, $seed_start, $seed_end, $alignment_length);
 my $verbose = 0;
 
 GetOptions(
@@ -74,8 +74,8 @@ GetOptions(
   'GUs_cutoff=i'               => \$GUs_cutoff,
   'penalty_multiplier=f'       => \$penalty_multiplier,
   'rev'                        => \$rev,
-  'hsp_start=i'                => \$hsp_start,
-  'hsp_end=i'                  => \$hsp_end,
+  'seed_start=i'               => \$seed_start,
+  'seed_end=i'                 => \$seed_end,
   'keep_tmp_file'              => \$keep_tmp_file,
   'maximum_alignment_length=s' => \$maximum_alignment_length,
   'total_mismatches_cutoff=i'  => \$total_mismatches_cutoff,
@@ -101,17 +101,17 @@ $GUs_cutoff = 7 unless($GUs_cutoff);
 $maximum_alignment_length = 22 unless($maximum_alignment_length);
 $extra_penalty_query_gap = 1 unless($extra_penalty_query_gap);
 $penalty_multiplier = 1.5 unless($penalty_multiplier);
-$hsp_start = 2 unless($hsp_start);
-$hsp_end = 13 unless($hsp_end);
-if($hsp_start >= $hsp_end){
-    die("--hsp_start <int> has to be greater than --hsp_end <int>\n");
+$seed_start = 2 unless($seed_start);
+$seed_end = 13 unless($seed_end);
+if($seed_start >= $seed_end){
+    die("--seed_start <int> has to be greater than --seed_end <int>\n");
 }
-if($hsp_start < 1){
-    die("--hsp_start has to be 1 or greater, but smaller than --hsp_end <int>\n");
+if($seed_start < 1){
+    die("--seed_start has to be 1 or greater, but smaller than --seed_end <int>\n");
 }
 $alignment_length = 19 unless($alignment_length);
-if($alignment_length < $hsp_end){
-    die("--alignment_length <int> has to be >= than --hsp_end <int>\n");
+if($alignment_length < $seed_end){
+    die("--alignment_length <int> has to be >= than --seed_end <int>\n");
 }
 
 my $OUT_FAILED;
@@ -304,7 +304,7 @@ while(<$IN>){
             die;
         }
         
-        if($z >= $hsp_start && $z <= $hsp_end){
+        if($z >= $seed_start && $z <= $seed_end){
             if($is_mismatch eq "yes"){
                 print STDERR ("    is mismatch in the seed region - will apply penalty... curr_score: ".$curr_score." * 1.5 => ".($curr_score*$penalty_multiplier)."\n") if($verbose);
                 $curr_score = $curr_score * $penalty_multiplier;

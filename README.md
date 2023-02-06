@@ -62,9 +62,9 @@ INPUT:
 --penalty_multiplier <string>    : default = 1.5. In the seed region (by default, 2-13 nt from the 5' of the miRNA strand), multiply mismatches by 
                                    penalty_multiplier. Only mismatches are multiplied, not G:U pairs and/or the '.' alignment
                                    caracters given by SSEARCH.
---hsp_start <int>                : default = 2 - Beginning of HSP region. --hsp_start and --hsp_end positions affect where in the alignment 
+--seed_start <int>               : default = 2 - Beginning of seed region. --seed_start and --seed_end positions affect where in the alignment 
                                    the --penalty_multiplier will be applied.
---hsp_end <int>                  : default = 13 - End of HSP region.
+--seed_end <int>                 : default = 13 - End of seed region.
 --num_mismatch_seed <int>        : default = 2 - Maximum of allowed mismatches in the seed region, excluding G:U pairs.
 --hsp_cutoff <int>               : default = 14 - HSPs shorter than this value will be discarded.
 --gap_cutoff <int>               : default = 1 - alignments having more than <int> gaps willbe discarded.
