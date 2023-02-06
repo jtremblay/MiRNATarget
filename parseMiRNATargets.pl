@@ -42,7 +42,7 @@ INPUT:
 --verbose                        : Set flag for debugging.
 --maximum_alignment_length <int> : default = 22 - alignments longer than this value will be discarded.
 --extra_penalty_query_gap <int>  : default = 1. If gap is located on query (miRNA) sequence, add an extra penalty of <int>.
---alignment_length <int>         : default = 19 - penalty score for each alignment will computed from 1 to <alignment_length>.
+--alignment_length <int>         : default = 19 - penalty score for each alignment will be computed from 1 to <alignment_length>.
 
 OUTPUT:
 STDOUT <string>                  : standard output. Alignments that passed filters.
