@@ -4,7 +4,7 @@ This repository contains an implementation of the psRNATarget software (2018) (h
 
 ![Figure 1](./mirnatarget_fig1.png)
 
-Here, we present code that implement the psRNATarget methodology. It parses the output of miRNA sequences aligned with SSEARCH against reference bacterial genomes. This script can be deployed and used on a HPC system. SSEARCH can be found in the fasta package (https://github.com/wrpearson/fasta36). Compared to the psRNATarget web server, this current implementation has the benefit of being fully customizable at the command line (see below for supported arguments) and does not give duplicate alignments in output.
+Here, we present code that implements the psRNATarget methodology. It parses the output of miRNA sequences aligned with SSEARCH against reference bacterial genomes. This script can be deployed and used on a HPC system. SSEARCH can be found in the fasta package (https://github.com/wrpearson/fasta36). Compared to the psRNATarget web server, this current implementation has the benefit of being fully customizable at the command line (see below for supported arguments) and does not give duplicate alignments in output.
 
 The SSEARCH command used to align miRNA sequences is the following command inspired from TargetFinder (https://github.com/carringtonlab/TargetFinder) - look for line 243 of ```targetfinder.pl``` in particular. By trial and error, we've found the following ssearch commands to exactly reproduce the output of psRNATarget.
 
