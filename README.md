@@ -92,6 +92,11 @@ Reverse sequence:               AGAGAAUCUGAGAUGAAUCAU <- Actual sequence that wi
 Reverse complementary sequence: UCUCUUAGACUCUACUUAGUA <- miRNA sequence shown on Fig. 1
 ```
 
+## Installation
+```
+Just clone the repository and you're good to go.
+```
+
 ## Citation
 If you use MiRNATarget in your work, please cite:
 
