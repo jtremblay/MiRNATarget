@@ -9,10 +9,12 @@ import argparse
 import os
 import sys
 import re
+import signal
+signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 def parse_command_line_arguments():
     parser = argparse.ArgumentParser(description='Parse miRNA targets')
-    parser.add_argument('-i', '--infile', required=True, help='Input file', type=argparse.FileType('r'))
+    parser.add_argument('-i', '--infile', required=False, help='Input file', type=argparse.FileType('r'))
     parser.add_argument('--E_cutoff', type=float, default=5.0, help='E-value cutoff')
     parser.add_argument('--num_mismatch_seed', type=int, default=2, help='Number of seed mismatches')
     parser.add_argument('--hsp_cutoff', type=int, default=14, help='HSP cutoff')
@@ -34,7 +36,6 @@ def parse_command_line_arguments():
 
 def main(arguments):
     args = parse_command_line_arguments()
-    infile = os.path.abspath(args.infile.name)
     seed_start = args.seed_start
     seed_end = args.seed_end
     alignment_length = args.alignment_length
@@ -82,8 +83,12 @@ def main(arguments):
     direction = "rev" if args.rev else "fwd"
 
     print("#query_id\tsubject_id\tmatch_aln\tquery_aln\tsubject_aln\tq_start\tq_end\ts_start\ts_end\texpect_value\tstrand", file=sys.stdout)
+ 
+    # Decides if reading from file or standard input (piped)
+    if args.infile:
+        infile = os.path.abspath(args.infile.name)
     
-    fhand = open(infile, 'r') if infile else sys.stdin
+    fhand = open(infile, 'r') if args.infile else sys.stdin
     
     for line in fhand:
         line = line.strip()
