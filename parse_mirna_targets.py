@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-"""Python script that parses miRNA alignment tsv file and compute the psRNATarget penalty scoring scheme for each alignment.
-python>=3.9.0
+"""Python script that parses miRNA alignment tsv file (generated with companion script parse_ssearch.py) and compute the psRNATarget penalty scoring scheme for each alignment.
+Developed and tested with python 3.9.0
+
 Julien Tremblay - julien.tremblay@nrc-cnrc.gc.ca
 """
 
@@ -14,7 +15,7 @@ signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 def parse_command_line_arguments():
     parser = argparse.ArgumentParser(description='Parse miRNA targets')
-    parser.add_argument('-i', '--infile', required=False, help='Input file', type=argparse.FileType('r'))
+    parser.add_argument('-i', '--infile', required=False, help='Input file (i.e. output of parse_ssearch.py). This argument is optional as the output of parse_ssearch.py can be piped directly to this script as well.', type=argparse.FileType('r'))
     parser.add_argument('--E_cutoff', type=float, default=5.0, help='E-value cutoff')
     parser.add_argument('--num_mismatch_seed', type=int, default=2, help='Number of seed mismatches')
     parser.add_argument('--hsp_cutoff', type=int, default=14, help='HSP cutoff')
@@ -71,15 +72,9 @@ def main(arguments):
             print("Could not open/write file:", outfile_failed)
             sys.exit()
 
-    #my %seen;
-    #my %stats;
-
-    #indir = os.path.dirname(args.infile.name)
-    
     seen = {}
     stats = {}
-    #prefix = os.path.basename(args.infile.name)
-    #prefix = os.path.splitext(infile)[0]
+    
     direction = "rev" if args.rev else "fwd"
 
     print("#query_id\tsubject_id\tmatch_aln\tquery_aln\tsubject_aln\tq_start\tq_end\ts_start\ts_end\texpect_value\tstrand", file=sys.stdout)

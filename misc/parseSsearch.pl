@@ -128,7 +128,7 @@ while(<IN>){
         $counter_match_nucl_string = 1;
         next;
     }
-    if($_ =~ m/^\s+[\.\:]/ && $counter_match_nucl_string == 1){
+    if($_ =~ m/^\s+[.:]/ && $counter_match_nucl_string == 1){
         # Found a match string.
         #extract substring at previously found positions.
         my $str = substr($_, $curr_start, $curr_end - $curr_start);

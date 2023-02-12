@@ -10,6 +10,13 @@ Here, we present code that implements the psRNATarget methodology. It parses the
 
 The SSEARCH command used to align miRNA sequences is the following command inspired from TargetFinder (https://github.com/carringtonlab/TargetFinder) - look for line 243 of ```targetfinder.pl``` in particular. By trial and error, we've found the following ssearch commands to exactly reproduce the output of psRNATarget.
 
+## Installation
+```
+Just clone the repository and you're good to go.
+```
+
+## Usage
+First, alignments with ssearch have to be generated.
 For forward strand alignment:
 ```
 ssearch36 \
@@ -27,30 +34,31 @@ ssearch36 \
  <reference_db> \
  > <ssearch_output>
 ```
-Note that in our tests, the ```-r``` argument had to be absolutely set to ```-r +4/-3```. The ```-f``` and ```-g``` parameters that were found to work are the following:
+Note that you can play with the -r switch instead of manually revcomping your query miRNA sequence like I did. Also note that in our tests, the ```-r``` argument had to be absolutely set to ```-r +4/-3```. The ```-f``` and ```-g``` parameters that were found to work are the following:
 ```-f -8 -g -3``` or ```-f -9 -g -2```.
-Then convert the ssearch alignments to tsv format with ```parseSsearch.pl```
+Then convert the ssearch alignments to tsv format with ```parse_ssearch.py```
 ```
-parseSsearch.pl \
-  --infile ssearch_output.txt \
-  > ssearch_output.tsv
+parse_ssearch.py -i ssearch_output.txt > ssearch_output.tsv
 ```
 
 Then, parse the alignments using the procedure implemented in psRNATarget:
 ```
-parseMiRNATargets.pl --help
-parseMiRNATargets.pl \
-  --infile ssearch_output.tsv \
-  > ssearch_output_parsed.tsv
+parse_mirna_targets.py -i ssearch_output.tsv > ssearch_output_parsed.tsv
 ```
-You can also pipe the output of parseSsearch.pl into parseMiRNATargets.pl like this:
+You can also pipe the output of parse_ssearch.py into parse_mirna_targets.py like this:
 ```
-parseSsearch.pl --infile ssearch_output.txt | parseMiRNATargets.pl > ssearch_output_parsed.tsv
+parse_ssearch.py -i ssearch_output.txt | parse_mirna_targets.py > ssearch_output_parsed.tsv
+```
+You can also use pipes all the way by piping the output of ssearch to parse_ssearch.py and piped again to parse_mirna_targets.py like shown below. This will reproduce the psRNATarget workflow in one single command and avoid generating intermediate files.
+```
+ssearch36 -f -8 -g -3 -E 10000 -T 8 -b 200 -r +4/-3 -n -U -W 10 -N 20000 ./data/test_rc.fna ./data/2545824690.fna | ./parse_ssearch.py | ./parse_mirna_targets.py
+
 ```
 
 We compared the results of this script with the ones given by psRNATarget and it gives identical results. 
 
-Available options of ```parseMiRNATargets.pl```:
+## Options
+Available options of ```parse_mirna_targets.py -h```:
 ```
 INPUT:
 --infile <string>                : Alignments in .tsv file format (output of companion script parseSsearch.pl). If no --infile <string> arg is 
@@ -91,11 +99,6 @@ It might seem confusing that in Fig. 1, what is actually shown as A-G or C-U pai
 Input mirna sequence:           UACUAAGUAGAGUCUAAGAGA
 Reverse sequence:               AGAGAAUCUGAGAUGAAUCAU <- Actual sequence that will bind to its target
 Reverse complementary sequence: UCUCUUAGACUCUACUUAGUA <- miRNA sequence shown on Fig. 1
-```
-
-## Installation
-```
-Just clone the repository and you're good to go.
 ```
 
 ## Citation

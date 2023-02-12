@@ -2,7 +2,7 @@
 
 """parse_ssearch.py. From the default output of ssearch36, this script parses each alignment to a .tsv format that can then be used in the companion 
 script parse_mirna_targets.py
-python>=3.9.0
+Developed and tested with python 3.9.0
 
 NOTES:
 It is not entirely clear which ssearch36 parameters are used by psRNATarget, but using the following SSEARCH followed by the execution of this script with default parame
@@ -21,7 +21,7 @@ signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 def parse_command_line_arguments():
     parser = argparse.ArgumentParser(description='Convert SSEARCH36 default output to a .tsv format output')
-    parser.add_argument('-i', '--infile', required=True, help='Input file (i.e. output of ssearch36)', type=argparse.FileType('r'))
+    parser.add_argument('-i', '--infile', required=False, help='Input file (i.e. output of ssearch36). This argument is optional as the output of ssearch36 can be piped directly to this script as well.', type=argparse.FileType('r'))
     parser.add_argument('--rev', default=False, action=argparse.BooleanOptionalAction, help='Reverse')
     parser.add_argument('--verbose', default=False, action=argparse.BooleanOptionalAction, help='Verbose output')
     args = parser.parse_args()
@@ -29,7 +29,6 @@ def parse_command_line_arguments():
 
 def main(arguments):
     args = parse_command_line_arguments()
-    infile = os.path.abspath(args.infile.name)
     verbose = args.verbose
     rev = args.rev
     
@@ -51,8 +50,11 @@ def main(arguments):
     subject_str = str;
     i = 0;
     strand = str;
-
-    fhand = open(infile, 'r') if infile else sys.stdin
+    
+    if args.infile:
+        infile = os.path.abspath(args.infile.name)
+    
+    fhand = open(infile, 'r') if args.infile else sys.stdin
 
     for line in fhand:
         line = line.rstrip()
@@ -146,9 +148,6 @@ def main(arguments):
             continue
     
     fhand.close()
-    #print STDERR  Dumper(\%hash) if($verbose)
-    #print STDERR "Done parsing ssearch standard format outfmt file.\n"
-
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
