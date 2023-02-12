@@ -34,7 +34,7 @@ ssearch36 \
  <reference_db> \
  > <ssearch_output>
 ```
-Note that you can play with the -r switch instead of manually revcomping your query miRNA sequence like I did. Also note that in our tests, the ```-r``` argument had to be absolutely set to ```-r +4/-3```. The ```-f``` and ```-g``` parameters that were found to work are the following:
+Note that you can play with the -r switch instead of manually revcomping your query miRNA sequence file like I did. Also note that in our tests, the ```-r``` argument had to be absolutely set to ```-r +4/-3```. The ```-f``` and ```-g``` parameters that were found to work are the following:
 ```-f -8 -g -3``` or ```-f -9 -g -2```.
 Then convert the ssearch alignments to tsv format with ```parse_ssearch.py```
 ```
