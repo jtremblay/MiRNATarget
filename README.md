@@ -51,7 +51,7 @@ parse_ssearch.py -i ssearch_output.txt | parse_mirna_targets.py > ssearch_output
 ```
 You can also use pipes all the way by piping the output of ssearch to parse_ssearch.py and piped again to parse_mirna_targets.py like shown below. This will reproduce the psRNATarget workflow in one single command and avoid generating intermediate files.
 ```
-ssearch36 -f -8 -g -3 -E 10000 -T 8 -b 200 -r +4/-3 -n -U -W 10 -N 20000 ./data/test_rc.fna ./data/2545824690.fna | ./parse_ssearch.py | ./parse_mirna_targets.py
+ssearch36 -f -8 -g -3 -E 10000 -T 8 -b 200 -r +4/-3 -n -U -W 10 -N 20000 ./data/test_rc.fna ./data/2545824690.fna | ./parse_ssearch.py | ./parse_mirna_targets.py > filtered_mirna.tsv
 
 ```
 
