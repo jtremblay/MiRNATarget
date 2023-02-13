@@ -132,7 +132,7 @@ def main(arguments):
         
         if verbose: print("Processing: "+query+"\t"+subject+"\n", file=sys.stderr)
 
-        # For debug only. Should always use $hsp_config = 1
+        # For debug only. Should always use hsp_config = 1
         hsp_config = 1
         offset = int
         end_substr = int
@@ -291,14 +291,8 @@ def main(arguments):
             if outfile_failed:
                 print(query+"\t"+subject+"\t"+aln_str+"\t"+query_str+"\t"+subject_str+"\t"+str(q_start)+"\t"+str(q_end)+"\t"+str(start)+"\t"+str(end)+"\t"+str(penalty_score)+"\t"+strand, file=fhand_out_failed)
             
-        
-    
-
     if outfile_failed: fhand_out_failed.close()
     fhand.close();
-    #print STDERR Dumper(\%stats) if($verbose);
-    #print STDERR  Dumper(\%seen) if($verbose);
-
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

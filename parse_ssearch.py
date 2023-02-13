@@ -5,7 +5,9 @@ script parse_mirna_targets.py
 Developed and tested with python 3.9.0
 
 NOTES:
-It is not entirely clear which ssearch36 parameters are used by psRNATarget, but using the following SSEARCH followed by the execution of this script with default parame
+It is not entirely clear which ssearch36 parameters are used by psRNATarget, but using the following ssearch command followed by the execution of parse_ssearch.py
+and then followed by the execution of this script with default paramemeters managed to reproduced the output of psRNATarget.
+
 ssearch36 -f -8 -g -3 -E 10000 -T 8 -b 200 -r +4/-3 -n -U -W 10 -N 20000 -i <input_mirna.fasta> <reference_genome.fasta> > <output_file>
 If you provide an already rev-complemented fasta file, you can omit the -i argument.
 
