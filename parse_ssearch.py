@@ -65,7 +65,7 @@ def main(arguments):
         if line.startswith("#"):
             continue
 
-        match = re.match(r"\s+\d+>>>(\S+) - (\d+) nt", line)
+        match = re.match(r"\s*\d+>>>(\S+) - (\d+) nt", line)
         if match:
             if verbose: print("\n---------------------------------------------", file=sys.stderr)
             counter_match_nucl_string = 0
