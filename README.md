@@ -90,7 +90,7 @@ INPUT:
 
 OUTPUT:
 STDOUT <string>                  : standard output. Alignments that passed filters.
---outfile_failed <string>        : stanbard error. Alignments that failed to pass filters.
+--outfile_failed <string>        : optional file in which alignments that failed to pass filters are written.
 
 ```
 ## Note on G:U pairs

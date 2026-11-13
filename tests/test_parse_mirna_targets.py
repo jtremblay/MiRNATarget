@@ -5,9 +5,11 @@ repository root with:
 """
 
 import os
+import re
+import tempfile
 import unittest
 
-from helpers import DATA, contig_of, parse_rows, read_report, run_script
+from helpers import DATA, parse_rows, read_fasta, read_report, run_script
 
 
 def pipeline(report, *args):
@@ -38,10 +40,10 @@ class TestRegression(unittest.TestCase):
 
     def test_ssearch_i_gives_same_targets_as_forward(self):
         # Using ssearch36 -i instead of rev-complementing the miRNAs beforehand must give
-        # the same targets and scores. Hit-number suffixes differ, and q_start/q_end are
-        # numbered on the original instead of the rev-complemented miRNA, so ignore those.
+        # the same targets and scores. q_start/q_end are numbered on the original instead
+        # of the rev-complemented miRNA, so ignore those.
         def comparable(tsv):
-            return [[r[0], contig_of(r[1])] + r[2:5] + r[7:] for r in parse_rows(tsv)]
+            return [r[:5] + r[7:] for r in parse_rows(tsv)]
 
         self.assertEqual(comparable(pipeline("ssearch_i.txt.gz")),
                          comparable(expected("expected_targets_fwd.tsv")))
@@ -88,6 +90,34 @@ class TestECutoff(unittest.TestCase):
     def test_cutoff_is_inclusive(self):
         rows = parse_rows(pipeline("ssearch_fwd.txt.gz", "--E_cutoff", "1.0"))
         self.assertIn("1.0", [r[9] for r in rows])
+
+
+class TestOptions(unittest.TestCase):
+
+    def test_target_suffix_removed_by_default(self):
+        contigs = set(read_fasta("contigs.fna"))
+        rows = parse_rows(pipeline("ssearch_fwd.txt.gz"))
+        self.assertTrue(rows)
+        self.assertTrue(all(r[1] in contigs for r in rows))
+
+    def test_keep_target_suffix(self):
+        default = parse_rows(pipeline("ssearch_fwd.txt.gz"))
+        kept = parse_rows(pipeline("ssearch_fwd.txt.gz", "--keep_target_suffix"))
+        self.assertEqual(len(kept), len(default))
+        for k, d in zip(kept, default):
+            self.assertRegex(k[1], r"^contig_\d+_\d+$")
+            self.assertEqual([k[0], re.sub(r"_\d+$", "", k[1])] + k[2:], d)
+
+    def test_outfile_failed(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            failed_path = os.path.join(tmp, "failed.tsv")
+            passed = parse_rows(pipeline("ssearch_fwd.txt.gz", "-o", failed_path))
+            with open(failed_path) as fh:
+                failed = parse_rows(fh.read())
+        self.assertEqual(passed, parse_rows(expected("expected_targets_fwd.tsv")))
+        self.assertTrue(failed)
+        self.assertTrue(all(len(r) == 11 for r in failed))
+        self.assertTrue(any(float(r[9]) > 5.0 for r in failed))
 
 
 if __name__ == "__main__":

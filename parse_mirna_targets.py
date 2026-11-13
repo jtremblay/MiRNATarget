@@ -64,13 +64,8 @@ def main(arguments):
     if alignment_length < seed_end:
         raise Exception("--alignment_length <int> has to be >= than --seed_end <int>")
 
-    fhand_out_failed = ""
-    if outfile_failed:
-        try:
-            fhand_out_failed = open(outfile_failed, 'wb')
-        except OSError:
-            print("Could not open/write file:", outfile_failed)
-            sys.exit()
+    # argparse.FileType('w') already opened the file (or exited with an error).
+    fhand_out_failed = outfile_failed
 
     seen = {}
     stats = {}
@@ -279,15 +274,15 @@ def main(arguments):
             len(subject_str) <= maximum_alignment_length):
             
             if not keep_target_suffix:
-                subject = subject.replace("_\d+$", "")
+                subject = re.sub(r"_\d+$", "", subject)
            
             if GUs <= GUs_cutoff:
                 print(query+"\t"+subject+"\t"+aln_str+"\t"+query_str+"\t"+subject_str+"\t"+str(q_start)+"\t"+str(q_end)+"\t"+str(start)+"\t"+str(end)+"\t"+str(penalty_score)+"\t"+strand, file=sys.stdout)
             else:
-                stats.get('GU_reject', 0) + 1
+                stats['GU_reject'] = stats.get('GU_reject', 0) + 1
             
         else:
-            stats.get('other_reject', 0) + 1
+            stats['other_reject'] = stats.get('other_reject', 0) + 1
             if outfile_failed:
                 print(query+"\t"+subject+"\t"+aln_str+"\t"+query_str+"\t"+subject_str+"\t"+str(q_start)+"\t"+str(q_end)+"\t"+str(start)+"\t"+str(end)+"\t"+str(penalty_score)+"\t"+strand, file=fhand_out_failed)
             
