@@ -39,6 +39,7 @@ def main(arguments):
     curr_target = "";
     curr_aln = "";
     curr_query_length = int;
+    curr_target_length = 0;
     counter_match_nucl_string = 0;
     curr_start = int;
     curr_end = int;
@@ -81,15 +82,32 @@ def main(arguments):
         if match:
             i+=1
             curr_target = match.group(1)+"_"+str(i)
+            curr_target_length = int(match.group(2))
             continue
         
         #Smith-Waterman score: 279 89.5% identity (100.0% similar) in 19 nt overlap (2-20:52164-52182)
         match = re.match(r"^Smith-Waterman.*\((\d+)-(\d+):(\d+)-(\d+)\)$", line)
         if match:
-            diff_start = int(match.group(1)) - 1
-            diff_end = int(curr_query_length)
-            start = int(match.group(3)) - diff_start
-            end = int(match.group(4)) + diff_end
+            # s_start/s_end (start, end) are the subject coordinates spanned by the
+            # *full* miRNA, i.e. the local alignment extended by the number of
+            # unaligned miRNA nt on each side. This is the region corresponding to
+            # subject_str. (-W only adds flanking context to the display and does
+            # not affect these coordinates.)
+            aln_q1 = int(match.group(1))
+            aln_q2 = int(match.group(2))
+            query_length = int(curr_query_length)
+            if aln_q1 <= aln_q2:
+                # Query displayed in its given orientation (e.g. already rev-complemented fasta).
+                ext_left = aln_q1 - 1
+                ext_right = query_length - aln_q2
+            else:
+                # Query rev-complemented by ssearch36 (-i): coordinates are descending
+                # and the left edge of the display corresponds to the miRNA's last nt.
+                ext_left = query_length - aln_q1
+                ext_right = aln_q2 - 1
+            # Clamp to the boundaries of the subject sequence.
+            start = max(1, int(match.group(3)) - ext_left)
+            end = min(curr_target_length, int(match.group(4)) + ext_right)
             hsp = int(match.group(4)) - int(match.group(3))
             if rev is True:
                 q_start = int(match.group(1))
