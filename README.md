@@ -67,7 +67,7 @@ INPUT:
                                    between mature small RNA and the target sequence. A higher value indicates 
                                    less similarity (and possibility) between small RNA and the target candidate. 
                                    The default penalty rule is set up by the scoring schema. Maximum expectation is the cutoff; 
-                                   any small RNA-target pair with an expectation less than the cutoff will be discarded in the final result. 
+                                   any small RNA-target pair with an expectation greater than the cutoff will be discarded in the final result. 
                                    The recommended values are 3.0-5.0 depending on the scoring schema. 
 --penalty_multiplier <string>    : default = 1.5. In the seed region (by default, 2-13 nt from the 5' of the miRNA strand), multiply mismatches by 
                                    penalty_multiplier. Only mismatches are multiplied, not G:U pairs and/or the '.' alignment
@@ -77,9 +77,9 @@ INPUT:
 --seed_end <int>                 : default = 13 - End of seed region.
 --num_mismatch_seed <int>        : default = 2 - Maximum of allowed mismatches in the seed region, excluding G:U pairs.
 --hsp_cutoff <int>               : default = 14 - HSPs shorter than this value will be discarded.
---gap_cutoff <int>               : default = 1 - alignments having more than <int> gaps willbe discarded.
+--gap_cutoff <int>               : default = 1 - alignments having more than <int> gaps will be discarded.
 --total_mismatches_cutoff <int>  : default = 8 - alignments showing more than <int> mismatches will be discarded.
---GUs_cutoff <int>               : default = 7 - alignments having more than <int> mismatches will be discarded.
+--GUs_cutoff <int>               : default = 7 - alignments having more than <int> G:U pairs will be discarded.
 --keep_target_suffix             : set flag if you wish to keep the temporary _<int> suffix appended at the end
                                    of subjects IDs.
 --rev                            : Set flag if alignments of miRNAs were done on revcomp subject sequences.
