@@ -16,7 +16,7 @@ signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 def parse_command_line_arguments():
     parser = argparse.ArgumentParser(description='Parse miRNA targets')
     parser.add_argument('-i', '--infile', required=False, help='Input file (i.e. output of parse_ssearch.py). This argument is optional as the output of parse_ssearch.py can be piped directly to this script as well.', type=argparse.FileType('r'))
-    parser.add_argument('--E_cutoff', type=float, default=5.0, help='E-value cutoff')
+    parser.add_argument('--E_cutoff', type=float, default=5.0, help='Expectation (penalty score) cutoff. Small RNA-target pairs with an expectation greater than this value are discarded.')
     parser.add_argument('--num_mismatch_seed', type=int, default=2, help='Number of seed mismatches')
     parser.add_argument('--hsp_cutoff', type=int, default=14, help='HSP cutoff')
     parser.add_argument('--gap_cutoff', type=int, default=1, help='Gap cutoff')
