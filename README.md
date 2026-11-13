@@ -90,7 +90,7 @@ INPUT:
 
 OUTPUT:
 STDOUT <string>                  : standard output. Alignments that passed filters.
---outfile_failed <string>        : stanbard error. Alignments that failed to pass filters.
+--outfile_failed <string>        : optional file in which alignments that failed to pass filters are written.
 
 ```
 ## Note on G:U pairs
@@ -100,6 +100,13 @@ Input mirna sequence:           UACUAAGUAGAGUCUAAGAGA
 Reverse sequence:               AGAGAAUCUGAGAUGAAUCAU <- Actual sequence that will bind to its target
 Reverse complementary sequence: UCUCUUAGACUCUACUUAGUA <- miRNA sequence shown on Fig. 1
 ```
+
+## Running tests
+The tests only need Python (3.9 or later); no extra packages and no ssearch36. From the repository root:
+```
+python -m unittest discover tests
+```
+They run on small fixtures in ```tests/data/``` (synthetic contigs with planted target sites and the corresponding ssearch36 reports) and check coordinates, scores, the ```--E_cutoff``` filter and the full pipeline output against a stored reference. If a change intentionally alters the results, regenerate the fixtures with ```python tests/make_fixtures.py``` (requires ssearch36 in your PATH) and review the differences before committing.
 
 ## Citation
 If you use MiRNATarget in your work, please cite:
