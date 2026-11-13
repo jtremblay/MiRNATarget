@@ -113,6 +113,8 @@ If you use MiRNATarget in your work, please cite:
 
 Tremblay, Julien
 
-MiRNATarget 1.0 : miRNA target finder
+MiRNATarget v1.0.0 : miRNA target finder
+
+https://doi.org/10.5281/zenodo.24206351
 
 https://github.com/jtremblay/mirnatarget
